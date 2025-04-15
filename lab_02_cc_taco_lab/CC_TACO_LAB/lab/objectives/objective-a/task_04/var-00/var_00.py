@@ -55,6 +55,19 @@ class Gen_Code:
                 return f"{value}"
             case Name(id):
                 return f"{id}"
+
+            case Subscript(value=value, slice=slice, ctx=ctx):
+                value_gen = self.gencode_exp(value, env)
+                slice_gen = self.gencode_exp(slice, env)
+                return f"{value_gen}[{slice_gen}]"
+            case Call(func=func, args=args, keywords=keywords):
+                func_gen = self.gencode_exp(func, env)
+                args_gen = [self.gencode_exp(arg, env) for arg in args]
+                args_string = ", ".join(args_gen)
+                return f"{func_gen}({args_string})"
+            case Attribute(value=value, attr=attr, ctx=ctx):
+                value_gen = self.gencode_exp(value, env)
+                return f"{value_gen}->{attr}"
             case _:
                 raise Exception("error in interp_stmt, unexpected " + repr(e))
 
@@ -64,10 +77,20 @@ class Gen_Code:
                 self.gencode_exp(value, env)
                 return self.gencode_stmts(cont, env)
 
-            case Assign(targets=[id], value=value):
-                name_gen = self.gencode_exp(id, env)
-                value_gen = self.gencode_exp(value, env)
-                return f"{name_gen} = {value_gen};\n" + self.gencode_stmts(cont, env)
+            case Assign(targets=targets, value=value):
+                # Handle multiple targets
+                if len(targets) == 1:
+                    target_gen = self.gencode_exp(targets[0], env)
+                    value_gen = self.gencode_exp(value, env)
+                    return f"{target_gen} = {value_gen};\n" + self.gencode_stmts(cont, env)
+                else:
+                    # Multiple targets case
+                    value_gen = self.gencode_exp(value, env)
+                    result = ""
+                    for target in targets:
+                        target_gen = self.gencode_exp(target, env)
+                        result += f"{target_gen} = {value_gen};\n"
+                    return result + self.gencode_stmts(cont, env)
 
             # For C variable declarations, can pass the type
             case AnnAssign(target=id, annotation=type_name, value=value):
@@ -188,6 +211,16 @@ def generate_outer_product_AST() -> Module:
             value=Name('inouts->C_mat'),
             simple=1
         ),
+        AnnAssign(
+            target=Name('i0'),
+            annotation=Name('int'),
+            simple=1
+        ),
+        AnnAssign(
+            target=Name('j0'),
+            annotation=Name('int'),
+            simple=1
+        ),
         Expr(
             value=Call(
                 func=Name('BEGIN_INSTRUMENTATION'),
@@ -283,9 +316,9 @@ def generate_outer_product_AST() -> Module:
         args=arguments(
             args=[
                 arg(arg=Name('*op_params'), annotation=Name("op_params_t")),
-                arg(arg=Name('*op_inputs'), annotation=Name("op_inputs_t")),
-                arg(arg=Name('*op_outputs'), annotation=Name("op_outputs_t")),
-                arg(arg=Name('*op_inouts'), annotation=Name("op_inouts_t")),
+                arg(arg=Name('*inputs'), annotation=Name("op_inputs_t")),
+                arg(arg=Name('*outputs'), annotation=Name("op_outputs_t")),
+                arg(arg=Name('*inouts'), annotation=Name("op_inouts_t")),
                 arg(arg=Name('*hwctx'), annotation=Name("hwctx_t")),
             ],
         ),
@@ -383,20 +416,24 @@ def operation_to_AST(filename: str) -> Module:
     Returns:
         Module: AST representation of the outer product computation
     """
+    module = None
     # Read dimensions from the first line
     with open(filename, 'r') as file:
         file_lines = file.readlines()
        
+    print(file_lines)
     operation = file_lines[0].strip().split()
-   
+    print(operation)
    
     match operation:
-        case "outerproduct":
+        case ['outerproduct']:
             module = generate_outer_product_AST()
-    
-   
+            return module
     
     return module
+   
+    
+   
 
 class Schedule_Type(IntEnum):
     UNKOWN = -1
