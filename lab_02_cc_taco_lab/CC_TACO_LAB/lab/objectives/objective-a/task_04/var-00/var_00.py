@@ -533,7 +533,8 @@ def do_interchange(module: Module, loop_a_name: str, loop_b_name: str):
     for node in module.body:
         if isinstance(node, FunctionDef):
             operation_func = node
-            break
+            print(operation_func)
+            
     assert(operation_func != None)
 
     # Find loops
@@ -541,10 +542,15 @@ def do_interchange(module: Module, loop_a_name: str, loop_b_name: str):
     loop_a = None
     loop_b = None
     for node in operation_func.body:
+        print(node)
         if isinstance(node, For):
             if node.target.id == loop_a_name:
+                print("loop_a_name")
+                print(node.target.id)
                 loop_a = node
             elif node.target.id == loop_b_name:
+                print("loop_b_name")
+                print(node.target.id)
                 loop_b = node
             search = node
             break
@@ -672,7 +678,7 @@ def schedule_on_AST(module: Module, schedule_file_name: str):
 
             op_with_args = schedule, args
             schedules.append(op_with_args)
-
+            
     for tup in schedules:
         schedule = tup[0]
         args = tup[1]
@@ -681,12 +687,15 @@ def schedule_on_AST(module: Module, schedule_file_name: str):
             case Schedule_Type.UNKOWN:
                 print("Unkown schedule type encountered")
             case Schedule_Type.UNROLL:
+                print("Unroll")
                 assert(len(args) == 1)
                 do_unroll(module, args[0])
             case Schedule_Type.INTERCHANGE:
+                print("Interchange")
                 assert(len(args) == 2)
                 do_interchange(module, args[0], args[1])
             case Schedule_Type.SPLIT:
+                print("Split")
                 assert(len(args) == 4)
                 do_split(module, args[0], args[1], args[2], args[3])
 
