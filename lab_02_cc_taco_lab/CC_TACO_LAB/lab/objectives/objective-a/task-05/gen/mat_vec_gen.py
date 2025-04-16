@@ -8,30 +8,20 @@ import copy
 # Just print these directly, the schedule does not change these and so we don't need
 # AST representation
 template_defines = """
+#include <stdio.h>
+#include <stdlib.h>
+
 #include "instruments.h"
+
+#include "COMPUTE.h"
 
 #ifndef COMPUTE_NAME
 #define COMPUTE_NAME baseline
 #endif
 
-#ifndef COMPUTE_FLOP_NAME
-#define COMPUTE_FLOP_NAME baseline_flop
+#ifndef COMPUTE_MODEL_NAME
+#define COMPUTE_MODEL_NAME baseline_model
 #endif
-
-#ifndef COMPUTE_BYTES_NAME
-#define COMPUTE_BYTES_NAME baseline_bytes
-#endif
-"""
-template_measurments = """
-double COMPUTE_FLOP_NAME( int m0, int n0 )
-{
-  return 2 * m0 * n0 * (Q) * (R) ;
-}
-
-double COMPUTE_BYTES_NAME( int m0, int n0 )
-{
-  return (3 * (m0 * n0) + ((Q) * (R))) * sizeof(float);
-}
 """
 
 # NOTE: Probably don't even need a class, no state stored anyways
@@ -65,6 +55,19 @@ class Gen_Code:
                 return f"{value}"
             case Name(id):
                 return f"{id}"
+
+            case Subscript(value=value, slice=slice, ctx=ctx):
+                value_gen = self.gencode_exp(value, env)
+                slice_gen = self.gencode_exp(slice, env)
+                return f"{value_gen}[{slice_gen}]"
+            case Call(func=func, args=args, keywords=keywords):
+                func_gen = self.gencode_exp(func, env)
+                args_gen = [self.gencode_exp(arg, env) for arg in args]
+                args_string = ", ".join(args_gen)
+                return f"{func_gen}({args_string})"
+            case Attribute(value=value, attr=attr, ctx=ctx):
+                value_gen = self.gencode_exp(value, env)
+                return f"{value_gen}->{attr}"
             case _:
                 raise Exception("error in interp_stmt, unexpected " + repr(e))
 
@@ -74,10 +77,20 @@ class Gen_Code:
                 self.gencode_exp(value, env)
                 return self.gencode_stmts(cont, env)
 
-            case Assign(targets=[id], value=value):
-                name_gen = self.gencode_exp(id, env)
-                value_gen = self.gencode_exp(value, env)
-                return f"{name_gen} = {value_gen};\n" + self.gencode_stmts(cont, env)
+            case Assign(targets=targets, value=value):
+                # Handle multiple targets
+                if len(targets) == 1:
+                    target_gen = self.gencode_exp(targets[0], env)
+                    value_gen = self.gencode_exp(value, env)
+                    return f"{target_gen} = {value_gen};\n" + self.gencode_stmts(cont, env)
+                else:
+                    # Multiple targets case
+                    value_gen = self.gencode_exp(value, env)
+                    result = ""
+                    for target in targets:
+                        target_gen = self.gencode_exp(target, env)
+                        result += f"{target_gen} = {value_gen};\n"
+                    return result + self.gencode_stmts(cont, env)
 
             # For C variable declarations, can pass the type
             case AnnAssign(target=id, annotation=type_name, value=value):
@@ -152,112 +165,263 @@ class Gen_Code:
             case _:
                 raise Exception("error in interp, unexpected " + repr(p))
 
-def operation_to_AST(filename: str) -> Module:
-    array_string = '{'
-    row_count = 0
-    col_count = 0
-    loop_names: List[str] = []
-    with open(filename, 'r') as file:
-        lines = file.readlines()
-        row_count, col_count = map(int, lines[0].strip().split(maxsplit=1))
-
-        for line in lines[1:-1]:
-            elements = [x.strip() + ',' for x in line.strip().split()]
-            array_string += " ".join(elements)
-
-        loop_names = lines[-1].strip().split(' ')
-
-    array_string += '}'
-
-    # Hard coded, but probaly true in all cases?
-    loop_bounds = {
-        "i0" : "m0",
-        "j0" : "n0",
-        "r0" : "(R)",
-        "q0" : "(Q)",
-    }
-
-    new_loop: For
-    last_loop = For(
-        target=Name(loop_names[-1]),
-        iter=Call(
-            func=Name('n/a'), # Only have this because the Call class requires a func
-            args=[Constant(0), Name(loop_bounds[loop_names[-1]]), Constant(1)]
+def mat_vec_mult_AST() -> Module:
+     # Create the main function body
+    body = [
+        # Variable declarations
+        AnnAssign(
+            target=Name('m0'),
+            annotation=Name('const int'),
+            value=Name('op_params->m0'),
+            simple=1
+        ),
+        AnnAssign(
+            target=Name('n0'),
+            annotation=Name('const int'),
+            value=Name('op_params->n0'),
+            simple=1
+        ),
+        AnnAssign(
+            target=Name('rs_a'),
+            annotation=Name('const int'),
+            value=Name('op_params->rs_a'),
+            simple=1
+        ),
+        AnnAssign(
+            target=Name('cs_a'),
+            annotation=Name('const int'),
+            value=Name('op_params->cs_a'),
+            simple=1
+        ),
+        AnnAssign(
+            target=Name('A'),
+            annotation=Name('float *'),
+            value=Name('inputs->A_mat'),
+            simple=1
+        ),
+        AnnAssign(
+            target=Name('x'),
+            annotation=Name('float *'),
+            value=Name('inputs->x_vect'),
+            simple=1
+        ),
+        AnnAssign(
+            target=Name('y'),
+            annotation=Name('float *'),
+            value=Name('inouts->y_vect'),
+            simple=1
+        ),
+        AnnAssign(
+            target=Name('i0'),
+            annotation=Name('int'),
+            simple=1
+        ),
+        AnnAssign(
+            target=Name('j0'),
+            annotation=Name('int'),
+            simple=1
+        ),
+        Expr(
+            value=Call(
+                func=Name('BEGIN_INSTRUMENTATION //'),
+                args=[Name('Start')],
+                keywords=[]
+            )
+        ),
+        # Nested loops for outer product
+        For(
+            target=Name('i0'),
+            iter=Call(
+                func=Name('n/a'),
+                args=[Constant(0), Name('m0'), Constant(1)],
+                keywords=[]
+            ),
+            body=[
+                For(
+                    target=Name('j0'),
+                    iter=Call(
+                        func=Name('n/a'),
+                        args=[Constant(0), Name('n0'), Constant(1)],
+                        keywords=[]
+                    ),
+                    body=[
+                        Assign(
+                            targets=[Subscript(
+                                value=Name('y'),
+                                slice=Name('i0'),
+                                ctx=Store()
+                            )],
+                            value=BinOp(
+                                Subscript(
+                                    value=Name('y'),
+                                    slice=Name('i0'),
+                                    ctx=Load()
+                                ),
+                                Add(),
+                                BinOp(
+                                    Subscript(
+                                        value=Name('A'),
+                                        slice=BinOp(
+                                            BinOp(
+                                                Name('i0'),
+                                                Mult(),
+                                                Name('rs_a')
+                                            ),
+                                            Add(),
+                                            BinOp(
+                                                Name('j0'),
+                                                Mult(),
+                                                Name('cs_a')
+                                            )
+                                        ),
+                                        ctx=Load()
+                                    ),
+                                    Mult(),
+                                    Subscript(
+                                        value=Name('x'),
+                                        slice=Name('j0'),
+                                        ctx=Load()
+                                    )
+                                )
+                            )
+                        )
+                    ]
+                )
+            ]
+        ),
+        Expr(
+            value=Call(
+                func=Name('END_INSTRUMENTATION //'),
+                args=[Name('End')],
+                keywords=[]
+            )
+        )
+    ]
+    
+    # Create the main function
+    main_function = FunctionDef(
+        name=Name("COMPUTE_NAME"),
+        args=arguments(
+            args=[
+                arg(arg=Name('*op_params'), annotation=Name("op_params_t")),
+                arg(arg=Name('*inputs'), annotation=Name("op_inputs_t")),
+                arg(arg=Name('*outputs'), annotation=Name("op_outputs_t")),
+                arg(arg=Name('*inouts'), annotation=Name("op_inouts_t")),
+                arg(arg=Name('*hwctx'), annotation=Name("hwctx_t")),
+            ],
+        ),
+        body=body,
+        returns=Name("void")
+    )
+    
+    # Create the model function
+    model_function = FunctionDef(
+        name=Name("COMPUTE_MODEL_NAME"),
+        args=arguments(
+            args=[
+                arg(arg=Name('*model'), annotation=Name("op_model_t")),
+                arg(arg=Name('*op_params'), annotation=Name("op_params_t")),
+                arg(arg=Name('*op_inputs'), annotation=Name("op_inputs_t")),
+                arg(arg=Name('*op_outputs'), annotation=Name("op_outputs_t")),
+                arg(arg=Name('*op_inouts'), annotation=Name("op_inouts_t")),
+                arg(arg=Name('*hwctx'), annotation=Name("hwctx_t")),
+            ],
         ),
         body=[
             Assign(
-                targets=[Name('y[i0*n0+j0]')],
-                value=BinOp(Name('y[i0*n0+j0]'), Add(), BinOp(Name("weights[q0*(R)+r0]"), Mult(), Name("x[ ((q0+i0)%m0)*n0 + ((r0+j0)%n0)]")))
+                targets=[Attribute(
+                    value=Name('model'),
+                    attr='flops',
+                    ctx=Store()
+                )],
+                value=BinOp(
+                    BinOp(
+                        Constant(2),
+                        Mult(),
+                        Name('op_params->m0')
+                    ),
+                    Mult(),
+                    Name('op_params->n0')
+                )
             ),
-        ]
-    )
-
-    # We traverse backwards to nest the loops
-    for name in reversed(loop_names[:-1]):
-        new_loop = For(
-            target=Name(name),
-            iter=Call(
-                func=Name('n/a'), # Only have this because the Call class requires a func
-                args=[Constant(0), Name(loop_bounds[name]), Constant(1)]
-            ),
-            body=[
-                last_loop # nest the previous
-            ]
-        )
-        last_loop = new_loop # and now this will be nested in the next
-
-    # Now we'll do all declarations at the begining of the function, this will simplify things
-    body = []
-    for name in loop_names:
-        body.append(AnnAssign(
-            target=Name(name),
-            annotation=Name("int"),
-            simple=1,
-        ))
-
-    # And add our nest loops
-    body.append(last_loop)
-
-    # Now put the loops inside the function def
-    main_function = FunctionDef(
-                name=Name("COMPUTE_NAME"),
-                args=arguments(
-                    args=[
-                        arg(arg=Name('m0'), annotation=Name("int")),
-                        arg(arg=Name('n0'), annotation=Name("int")),
-                        arg(arg=Name('*x'), annotation=Name("float")),
-                        arg(arg=Name('*y'), annotation=Name("float")),
-                    ],
-                ),
-                body=body,
-                returns=Name("void")
+            Assign(
+                targets=[Attribute(
+                    value=Name('model'),
+                    attr='bytes',
+                    ctx=Store()
+                )],
+                value=BinOp(
+                    BinOp(
+                        BinOp(
+                            BinOp(
+                                BinOp(
+                                    Constant(2),
+                                    Mult(),
+                                    BinOp(
+                                        Name('op_params->m0'),
+                                        Mult(),
+                                        Name('op_params->n0')
+                                    )
+                                ),
+                                Add(),
+                                Name('op_params->m0')
+                            ),
+                            Add(),
+                            Name('op_params->n0')
+                        ),
+                        Mult(),
+                        Call(
+                            func=Name('sizeof'),
+                            args=[Name('float')],
+                            keywords=[]
+                        )
+                    ),
+                    Mult(),
+                    Constant(1)
+                )
             )
-
+        ],
+        returns=Name("void")
+    )
+    
+    # Create the module
     module = Module(
         body=[
-            AnnAssign(
-                target=Name('R'),
-                annotation=Name('static const int'),
-                value=Constant(col_count),
-                simple=1
-            ),
-            AnnAssign(
-                target=Name('Q'),
-                annotation=Name('static const int'),
-                value=Constant(row_count),
-                simple=1
-            ),
-            AnnAssign(
-                target=Name('weights[]'),
-                annotation=Name('static float'),
-                value=Constant(array_string),
-                simple=1
-            ),
-            main_function # From above
+            model_function,
+            main_function
         ]
     )
-
+    
     return module
+
+def operation_to_AST(filename: str) -> Module:
+    """
+    Convert an operation file to an AST representing an outer product computation.
+    
+    Args:
+        filename: Path to the operation file
+        
+    Returns:
+        Module: AST representation of the outer product computation
+    """
+    module = None
+    # Read dimensions from the first line
+    with open(filename, 'r') as file:
+        file_lines = file.readlines()
+       
+    print(file_lines)
+    operation = file_lines[0].strip().split()
+    print(operation)
+   
+    match operation:
+        case ['matvec']:
+            module = mat_vec_mult_AST()
+            return module
+    
+    return module
+   
+    
+   
 
 class Schedule_Type(IntEnum):
     UNKOWN = -1
@@ -523,7 +687,7 @@ if __name__ == "__main__":
     schedule_file_name = sys.argv[3]
 
     module = operation_to_AST(operation_file_name)
-    schedule_on_AST(module, schedule_file_name)
+    #   schedule_on_AST(module, schedule_file_name)
 
     gen = Gen_Code()
     generated_code = gen.gencode(module)
@@ -534,6 +698,3 @@ if __name__ == "__main__":
 
         # Write the generated function and variables
         out.write(generated_code)
-
-        # For now not generating these just using templates
-        out.write(template_measurments)
