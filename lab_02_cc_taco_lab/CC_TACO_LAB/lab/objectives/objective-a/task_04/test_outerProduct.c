@@ -35,7 +35,9 @@ for (i0 = 0; i0 < m0; i0 += 1)
 {
 for (j0 = 0; j0 < n0; j0 += 1)
 {
+BEGIN_INSTRUMENTATION ;
 C[((i0 * rs_c) + (j0 * cs_c))] = (C[((i0 * rs_c) + (j0 * cs_c))] + (x[i0] * y[j0]));
+END_INSTRUMENTATION ;
 
 }
 

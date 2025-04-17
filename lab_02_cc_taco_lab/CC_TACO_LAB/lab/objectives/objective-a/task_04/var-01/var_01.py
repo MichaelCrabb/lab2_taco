@@ -221,13 +221,6 @@ def generate_outer_product_AST() -> Module:
             annotation=Name('int'),
             simple=1
         ),
-        Expr(
-            value=Call(
-                func=Name('BEGIN_INSTRUMENTATION'),
-                args=[],
-                keywords=[]
-            )
-        ),
         # Nested loops for outer product
         For(
             target=Name('i0'),
@@ -245,6 +238,11 @@ def generate_outer_product_AST() -> Module:
                         keywords=[]
                     ),
                     body=[
+                        AnnAssign(
+                            target=Name(''),
+                            annotation=Name('BEGIN_INSTRUMENTATION'),
+                            simple=1
+                        ),
                         Assign(
                             targets=[Subscript(
                                 value=Name('C'),
@@ -296,18 +294,17 @@ def generate_outer_product_AST() -> Module:
                                     )
                                 )
                             )
+                        ),
+                        AnnAssign(
+                            target=Name(''),
+                            annotation=Name('END_INSTRUMENTATION'),
+                            simple=1
                         )
                     ]
                 )
             ]
         ),
-        Expr(
-            value=Call(
-                func=Name('END_INSTRUMENTATION'),
-                args=[],
-                keywords=[]
-            )
-        )
+
     ]
     
     # Create the main function
