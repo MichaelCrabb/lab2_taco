@@ -221,13 +221,6 @@ def mat_vec_mult_AST() -> Module:
             annotation=Name('int'),
             simple=1
         ),
-        Expr(
-            value=Call(
-                func=Name('BEGIN_INSTRUMENTATION //'),
-                args=[Name('Start')],
-                keywords=[]
-            )
-        ),
         # Nested loops for outer product
         For(
             target=Name('i0'),
@@ -245,6 +238,11 @@ def mat_vec_mult_AST() -> Module:
                         keywords=[]
                     ),
                     body=[
+                        AnnAssign(
+                            target=Name(''),
+                            annotation=Name('BEGIN_INSTRUMENTATION'),
+                            simple=0
+                        ),
                         Assign(
                             targets=[Subscript(
                                 value=Name('y'),
@@ -284,18 +282,16 @@ def mat_vec_mult_AST() -> Module:
                                     )
                                 )
                             )
-                        )
+                        ),
+                        AnnAssign(
+                            target=Name(''),
+                            annotation=Name('END_INSTRUMENTATION'),
+                            simple=0
+                        ),
                     ]
                 )
             ]
         ),
-        Expr(
-            value=Call(
-                func=Name('END_INSTRUMENTATION //'),
-                args=[Name('End')],
-                keywords=[]
-            )
-        )
     ]
     
     # Create the main function
