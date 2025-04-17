@@ -165,7 +165,7 @@ class Gen_Code:
             case _:
                 raise Exception("error in interp, unexpected " + repr(p))
 
-def generate_outer_product_AST() -> Module:
+def mat_vec_mult_AST() -> Module:
      # Create the main function body
     body = [
         # Variable declarations
@@ -182,15 +182,21 @@ def generate_outer_product_AST() -> Module:
             simple=1
         ),
         AnnAssign(
-            target=Name('rs_c'),
+            target=Name('rs_a'),
             annotation=Name('const int'),
-            value=Name('op_params->rs_c'),
+            value=Name('op_params->rs_a'),
             simple=1
         ),
         AnnAssign(
-            target=Name('cs_c'),
+            target=Name('cs_a'),
             annotation=Name('const int'),
-            value=Name('op_params->cs_c'),
+            value=Name('op_params->cs_a'),
+            simple=1
+        ),
+        AnnAssign(
+            target=Name('A'),
+            annotation=Name('float *'),
+            value=Name('inputs->A_mat'),
             simple=1
         ),
         AnnAssign(
@@ -202,13 +208,7 @@ def generate_outer_product_AST() -> Module:
         AnnAssign(
             target=Name('y'),
             annotation=Name('float *'),
-            value=Name('inputs->y_vect'),
-            simple=1
-        ),
-        AnnAssign(
-            target=Name('C'),
-            annotation=Name('float *'),
-            value=Name('inouts->C_mat'),
+            value=Name('inouts->y_vect'),
             simple=1
         ),
         AnnAssign(
@@ -220,13 +220,6 @@ def generate_outer_product_AST() -> Module:
             target=Name('j0'),
             annotation=Name('int'),
             simple=1
-        ),
-        Expr(
-            value=Call(
-                func=Name('BEGIN_INSTRUMENTATION'),
-                args=[],
-                keywords=[]
-            )
         ),
         # Nested loops for outer product
         For(
@@ -245,69 +238,60 @@ def generate_outer_product_AST() -> Module:
                         keywords=[]
                     ),
                     body=[
+                        AnnAssign(
+                            target=Name(''),
+                            annotation=Name('BEGIN_INSTRUMENTATION'),
+                            simple=0
+                        ),
                         Assign(
                             targets=[Subscript(
-                                value=Name('C'),
-                                slice=BinOp(
-                                    BinOp(
-                                        Name('i0'),
-                                        Mult(),
-                                        Name('rs_c')
-                                    ),
-                                    Add(),
-                                    BinOp(
-                                        Name('j0'),
-                                        Mult(),
-                                        Name('cs_c')
-                                    )
-                                ),
+                                value=Name('y'),
+                                slice=Name('i0'),
                                 ctx=Store()
                             )],
                             value=BinOp(
                                 Subscript(
-                                    value=Name('C'),
-                                    slice=BinOp(
-                                        BinOp(
-                                            Name('i0'),
-                                            Mult(),
-                                            Name('rs_c')
-                                        ),
-                                        Add(),
-                                        BinOp(
-                                            Name('j0'),
-                                            Mult(),
-                                            Name('cs_c')
-                                        )
-                                    ),
+                                    value=Name('y'),
+                                    slice=Name('i0'),
                                     ctx=Load()
                                 ),
                                 Add(),
                                 BinOp(
                                     Subscript(
-                                        value=Name('x'),
-                                        slice=Name('i0'),
+                                        value=Name('A'),
+                                        slice=BinOp(
+                                            BinOp(
+                                                Name('i0'),
+                                                Mult(),
+                                                Name('rs_a')
+                                            ),
+                                            Add(),
+                                            BinOp(
+                                                Name('j0'),
+                                                Mult(),
+                                                Name('cs_a')
+                                            )
+                                        ),
                                         ctx=Load()
                                     ),
                                     Mult(),
                                     Subscript(
-                                        value=Name('y'),
+                                        value=Name('x'),
                                         slice=Name('j0'),
                                         ctx=Load()
                                     )
                                 )
                             )
-                        )
+                        ),
+                        AnnAssign(
+                            target=Name(''),
+                            annotation=Name('END_INSTRUMENTATION'),
+                            simple=0
+                        ),
                     ]
                 )
             ]
         ),
-        Expr(
-            value=Call(
-                func=Name('END_INSTRUMENTATION'),
-                args=[],
-                keywords=[]
-            )
-        )
     ]
     
     # Create the main function
@@ -406,8 +390,8 @@ def generate_outer_product_AST() -> Module:
     
     return module
 
-def generate_pointwise_AST() -> Module:
-    # Create the main function body
+def pointwise_AST() -> Module:
+     # Create the main function body
     body = [
         # Variable declarations
         AnnAssign(
@@ -425,13 +409,13 @@ def generate_pointwise_AST() -> Module:
         AnnAssign(
             target=Name('y'),
             annotation=Name('float *'),
-            value=Name('inputs->y_vect'),
+            value=Name('inouts->y_vect'),
             simple=1
         ),
         AnnAssign(
-            target=Name('C'),
+            target=Name('z'),
             annotation=Name('float *'),
-            value=Name('inouts->C_mat'),
+            value=Name('inouts->z_vect'),
             simple=1
         ),
         AnnAssign(
@@ -444,13 +428,6 @@ def generate_pointwise_AST() -> Module:
             annotation=Name('int'),
             simple=1
         ),
-        Expr(
-            value=Call(
-                func=Name('BEGIN_INSTRUMENTATION'),
-                args=[],
-                keywords=[]
-            )
-        ),
         # Nested loops for outer product
         For(
             target=Name('i0'),
@@ -460,55 +437,39 @@ def generate_pointwise_AST() -> Module:
                 keywords=[]
             ),
             body=[
+                AnnAssign(
+                    target=Name(''),
+                    annotation=Name('BEGIN_INSTRUMENTATION'),
+                    simple=0
+                ),
                 Assign(
                     targets=[Subscript(
-                        value=Name('C'),
-                        slice=BinOp(
-                                BinOp(
-                                    Name('i0'),
-                                    Mult(),
-                                    Name('rs_c')
-                                    ),
-                                Add(),
-                                BinOp(
-                                    Name('j0'),
-                                    Mult(),
-                                    Name('cs_c')
-                                )
-                            ),
-                        ctx=Store()
+                    value=Name('z'),
+                    slice=Name('i0'),
+                    ctx=Store()
                     )],
-                    value=BinOp(
+                    value=
+                    BinOp(
                         Subscript(
-                            value=Name('z'),
+                            value=Name('x'),
                             slice=Name('i0'),
                             ctx=Load()
-                            ),
-                        Eq(),
-                        BinOp(
-                            Subscript(
-                                value=Name('x'),
-                                slice=Name('i0'),
-                                ctx=Load()
-                            ),
-                            Mult(),
-                            Subscript(
-                                value=Name('y'),
-                                slice=Name('i0'),
-                                ctx=Load()
-                            )
+                        ),
+                        Mult(),
+                        Subscript(
+                            value=Name('y'),
+                            slice=Name('i0'),
+                            ctx=Load()
                         )
                     )
-                )
+                ),
+                AnnAssign(
+                    target=Name(''),
+                    annotation=Name('END_INSTRUMENTATION'),
+                    simple=0
+                ),
             ]
         ),
-        Expr(
-            value=Call(
-                func=Name('END_INSTRUMENTATION'),
-                args=[],
-                keywords=[]
-            )
-        )
     ]
     
     # Create the main function
@@ -547,15 +508,7 @@ def generate_pointwise_AST() -> Module:
                     attr='flops',
                     ctx=Store()
                 )],
-                value=BinOp(
-                    BinOp(
-                        Constant(2),
-                        Mult(),
-                        Name('op_params->m0')
-                    ),
-                    Mult(),
-                    Name('op_params->n0')
-                )
+                value=Name('op_params->m0')  
             ),
             Assign(
                 targets=[Attribute(
@@ -566,21 +519,9 @@ def generate_pointwise_AST() -> Module:
                 value=BinOp(
                     BinOp(
                         BinOp(
-                            BinOp(
-                                BinOp(
-                                    Constant(2),
-                                    Mult(),
-                                    BinOp(
-                                        Name('op_params->m0'),
-                                        Mult(),
-                                        Name('op_params->n0')
-                                    )
-                                ),
-                                Add(),
-                                Name('op_params->m0')
-                            ),
-                            Add(),
-                            Name('op_params->n0')
+                            Constant(3),
+                            Mult(),
+                            Name('op_params->m0'),
                         ),
                         Mult(),
                         Call(
@@ -606,7 +547,6 @@ def generate_pointwise_AST() -> Module:
     )
     
     return module
-
 
 def operation_to_AST(filename: str) -> Module:
     """
@@ -628,12 +568,11 @@ def operation_to_AST(filename: str) -> Module:
     print(operation)
    
     match operation:
-        case ['outerproduct']:
-            module = generate_outer_product_AST()
+        case ['matvec']:
+            module = mat_vec_mult_AST()
             return module
         case ['pointwise']:
-            module = generate_pointwise_AST()
-            return module
+            module = pointwise_AST()
     
     return module
    
@@ -904,7 +843,7 @@ if __name__ == "__main__":
     schedule_file_name = sys.argv[3]
 
     module = operation_to_AST(operation_file_name)
-    schedule_on_AST(module, schedule_file_name)
+    #   schedule_on_AST(module, schedule_file_name)
 
     gen = Gen_Code()
     generated_code = gen.gencode(module)
