@@ -6,10 +6,21 @@
 TASK_DIR=$(pwd)
 FILE_OP_C=${TASK_DIR}/OP.c
 
-for i in `ls *.c`
-do
-    echo $i
-    make -C ../.. clean-results OP_INCLUDE_DIR=${TASK_DIR} FILE_OP_C=${FILE_OP_C} FILE_REF=${TASK_DIR}/baseline.c FILE_TST=${TASK_DIR}/${i}
-done
+TEST_FILE=test000.c
+OP_DIR=operation/matvec.operation
+NONE_DIR=schedules/basic/none.schedule
 
-rm *~
+# for i in `ls *.c`
+# do
+#     echo $i
+#     make -C ../.. clean-results OP_INCLUDE_DIR=${TASK_DIR} FILE_OP_C=${FILE_OP_C} FILE_REF=${TASK_DIR}/baseline.c FILE_TST=${TASK_DIR}/${i}
+# done
+
+# Reflexive cleaning 
+make -C ../../.. clean-results OP_INCLUDE_DIR=${TASK_DIR} FILE_OP_C=${FILE_OP_C} FILE_REF=${TASK_DIR}/baseline.c FILE_TST=${TASK_DIR}/baseline.c
+
+# Test file cleaning
+make -C ../../.. clean-results OP_INCLUDE_DIR=${TASK_DIR} FILE_OP_C=${FILE_OP_C} FILE_REF=${TASK_DIR}/baseline.c FILE_TST=${TASK_DIR}/${TEST_FILE}
+
+rm ${TEST_FILE}
+rm combined.png

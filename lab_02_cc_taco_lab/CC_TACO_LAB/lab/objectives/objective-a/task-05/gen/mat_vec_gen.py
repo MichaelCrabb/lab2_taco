@@ -517,7 +517,7 @@ def do_interchange(module: Module, loop_a_name: str, loop_b_name: str):
     for node in module.body:
         if isinstance(node, FunctionDef):
             operation_func = node
-            break
+            # break
     assert(operation_func != None)
 
     # Find loops
@@ -527,8 +527,10 @@ def do_interchange(module: Module, loop_a_name: str, loop_b_name: str):
     for node in operation_func.body:
         if isinstance(node, For):
             if node.target.id == loop_a_name:
+                print(f"Target ID = {node.target.id}, Loop A Name = {loop_a_name}\n")
                 loop_a = node
             elif node.target.id == loop_b_name:
+                print(f"Target ID = {node.target.id}, Loop B Name = {loop_b_name}\n")
                 loop_b = node
             search = node
             break
@@ -683,7 +685,7 @@ if __name__ == "__main__":
     schedule_file_name = sys.argv[3]
 
     module = operation_to_AST(operation_file_name)
-    #   schedule_on_AST(module, schedule_file_name)
+    schedule_on_AST(module, schedule_file_name)
 
     gen = Gen_Code()
     generated_code = gen.gencode(module)

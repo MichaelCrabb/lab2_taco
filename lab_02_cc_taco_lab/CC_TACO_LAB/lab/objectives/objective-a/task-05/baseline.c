@@ -71,17 +71,19 @@ void COMPUTE_NAME( op_params_t  *op_params,
   float *x = inputs->x_vect;
   float *y = inouts->y_vect;
   
-  BEGIN_INSTRUMENTATION;
+  // BEGIN_INSTRUMENTATION;
   for( int i0 = 0; i0 < m0; ++i0 )
     {
       for( int j0 = 0; j0 < n0; ++j0 )
 	{
+    BEGIN_INSTRUMENTATION;
 	  y[i0] +=
 	    A[(i0*rs_a) + (j0*cs_a)] *
 	    x[j0];
+    END_INSTRUMENTATION;
 	}
     }
-  END_INSTRUMENTATION;
+  // END_INSTRUMENTATION;
   
 
 }
