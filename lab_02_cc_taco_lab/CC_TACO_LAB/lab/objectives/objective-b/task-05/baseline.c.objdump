@@ -1,0 +1,83 @@
+
+/home/hugoea/CCLabs/lab-2-taco/lab2_taco/lab_02_cc_taco_lab/CC_TACO_LAB/lab/objectives/objective-a/task-05/baseline.c.dbg.o:     file format elf64-x86-64
+
+
+Disassembly of section .text:
+
+0000000000000000 <compute_model_tst>:
+   0:	f3 0f 1e fa          	endbr64
+   4:	48 89 fa             	mov    %rdi,%rdx
+   7:	8b 3e                	mov    (%rsi),%edi
+   9:	8b 4e 04             	mov    0x4(%rsi),%ecx
+   c:	c5 f8 57 c0          	vxorps %xmm0,%xmm0,%xmm0
+  10:	89 f8                	mov    %edi,%eax
+  12:	0f af c1             	imul   %ecx,%eax
+  15:	8d 34 00             	lea    (%rax,%rax,1),%esi
+  18:	8d 04 78             	lea    (%rax,%rdi,2),%eax
+  1b:	01 c8                	add    %ecx,%eax
+  1d:	c5 fa 2a ce          	vcvtsi2ss %esi,%xmm0,%xmm1
+  21:	48 98                	cltq
+  23:	48 c1 e0 02          	shl    $0x2,%rax
+  27:	78 17                	js     40 <compute_model_tst+0x40>
+  29:	c4 e1 fa 2a c0       	vcvtsi2ss %rax,%xmm0,%xmm0
+  2e:	c5 f0 14 c8          	vunpcklps %xmm0,%xmm1,%xmm1
+  32:	c5 f8 13 0a          	vmovlps %xmm1,(%rdx)
+  36:	c3                   	ret
+  37:	66 0f 1f 84 00 00 00 	nopw   0x0(%rax,%rax,1)
+  3e:	00 00 
+  40:	48 d1 e8             	shr    $1,%rax
+  43:	c4 e1 fa 2a c0       	vcvtsi2ss %rax,%xmm0,%xmm0
+  48:	c5 fa 58 c0          	vaddss %xmm0,%xmm0,%xmm0
+  4c:	c5 f0 14 c8          	vunpcklps %xmm0,%xmm1,%xmm1
+  50:	c5 f8 13 0a          	vmovlps %xmm1,(%rdx)
+  54:	c3                   	ret
+  55:	66 66 2e 0f 1f 84 00 	data16 cs nopw 0x0(%rax,%rax,1)
+  5c:	00 00 00 00 
+
+0000000000000060 <compute_tst>:
+  60:	f3 0f 1e fa          	endbr64
+  64:	55                   	push   %rbp
+  65:	53                   	push   %rbx
+  66:	48 63 17             	movslq (%rdi),%rdx
+  69:	8b 6f 04             	mov    0x4(%rdi),%ebp
+  6c:	44 8b 57 08          	mov    0x8(%rdi),%r10d
+  70:	48 63 47 0c          	movslq 0xc(%rdi),%rax
+  74:	48 8b 5e 20          	mov    0x20(%rsi),%rbx
+  78:	4c 8b 4e 28          	mov    0x28(%rsi),%r9
+  7c:	48 8b 49 10          	mov    0x10(%rcx),%rcx
+  80:	85 d2                	test   %edx,%edx
+  82:	7e 54                	jle    d8 <compute_tst+0x78>
+  84:	48 8d 34 85 00 00 00 	lea    0x0(,%rax,4),%rsi
+  8b:	00 
+  8c:	48 63 c5             	movslq %ebp,%rax
+  8f:	4c 8d 1c 91          	lea    (%rcx,%rdx,4),%r11
+  93:	45 31 c0             	xor    %r8d,%r8d
+  96:	49 8d 3c 81          	lea    (%r9,%rax,4),%rdi
+  9a:	85 ed                	test   %ebp,%ebp
+  9c:	7e 3d                	jle    db <compute_tst+0x7b>
+  9e:	66 90                	xchg   %ax,%ax
+  a0:	49 63 c0             	movslq %r8d,%rax
+  a3:	c5 fa 10 09          	vmovss (%rcx),%xmm1
+  a7:	48 8d 14 83          	lea    (%rbx,%rax,4),%rdx
+  ab:	4c 89 c8             	mov    %r9,%rax
+  ae:	66 90                	xchg   %ax,%ax
+  b0:	c5 fa 10 02          	vmovss (%rdx),%xmm0
+  b4:	c5 fa 59 00          	vmulss (%rax),%xmm0,%xmm0
+  b8:	48 83 c0 04          	add    $0x4,%rax
+  bc:	48 01 f2             	add    %rsi,%rdx
+  bf:	c5 f2 58 c8          	vaddss %xmm0,%xmm1,%xmm1
+  c3:	c5 fa 11 09          	vmovss %xmm1,(%rcx)
+  c7:	48 39 f8             	cmp    %rdi,%rax
+  ca:	75 e4                	jne    b0 <compute_tst+0x50>
+  cc:	48 83 c1 04          	add    $0x4,%rcx
+  d0:	45 01 d0             	add    %r10d,%r8d
+  d3:	49 39 cb             	cmp    %rcx,%r11
+  d6:	75 c8                	jne    a0 <compute_tst+0x40>
+  d8:	5b                   	pop    %rbx
+  d9:	5d                   	pop    %rbp
+  da:	c3                   	ret
+  db:	48 83 c1 04          	add    $0x4,%rcx
+  df:	45 01 d0             	add    %r10d,%r8d
+  e2:	4c 39 d9             	cmp    %r11,%rcx
+  e5:	75 b3                	jne    9a <compute_tst+0x3a>
+  e7:	eb ef                	jmp    d8 <compute_tst+0x78>
