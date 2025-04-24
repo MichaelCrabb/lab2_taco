@@ -1,0 +1,77 @@
+
+[0] Code Region - foo
+
+Iterations:        100
+Instructions:      1000
+Total Cycles:      305
+Total uOps:        1100
+
+Dispatch Width:    6
+uOps Per Cycle:    3.61
+IPC:               3.28
+Block RThroughput: 1.8
+
+
+Instruction Info:
+[1]: #uOps
+[2]: Latency
+[3]: RThroughput
+[4]: MayLoad
+[5]: MayStore
+[6]: HasSideEffects (U)
+
+[1]    [2]    [3]    [4]    [5]    [6]    Instructions:
+ 1      1     0.25                        testl	%ecx, %ecx
+ 1      1     0.50                        jle	.L8
+ 1      1     0.25                        subl	$1, %ecx
+ 1      8     0.50    *                   vmovss	(%rdx), %xmm0
+ 2      2     0.25                        leaq	4(%rax,%rcx,4), %rcx
+ 1      10    0.50    *                   vaddss	(%rax), %xmm0, %xmm0
+ 1      1     0.25                        addq	$4, %rax
+ 1      1     1.00           *            vmovss	%xmm0, (%rdx)
+ 1      1     0.25                        cmpq	%rcx, %rax
+ 1      1     0.50                        jne	.L7
+
+
+Resources:
+[0]   - Zn3AGU0
+[1]   - Zn3AGU1
+[2]   - Zn3AGU2
+[3]   - Zn3ALU0
+[4]   - Zn3ALU1
+[5]   - Zn3ALU2
+[6]   - Zn3ALU3
+[7]   - Zn3BRU1
+[8]   - Zn3FPP0
+[9]   - Zn3FPP1
+[10]  - Zn3FPP2
+[11]  - Zn3FPP3
+[12.0] - Zn3FPP45
+[12.1] - Zn3FPP45
+[13]  - Zn3FPSt
+[14.0] - Zn3LSU
+[14.1] - Zn3LSU
+[14.2] - Zn3LSU
+[15.0] - Zn3Load
+[15.1] - Zn3Load
+[15.2] - Zn3Load
+[16.0] - Zn3Store
+[16.1] - Zn3Store
+
+
+Resource pressure per iteration:
+[0]    [1]    [2]    [3]    [4]    [5]    [6]    [7]    [8]    [9]    [10]   [11]   [12.0] [12.1] [13]   [14.0] [14.1] [14.2] [15.0] [15.1] [15.2] [16.0] [16.1] 
+ -      -      -     1.46   1.45   1.46   1.46   1.17    -      -     0.50   0.50   1.50   1.50   1.00   1.00   1.00   1.00   0.66   0.67   0.67   0.50   0.50   
+
+Resource pressure by instruction:
+[0]    [1]    [2]    [3]    [4]    [5]    [6]    [7]    [8]    [9]    [10]   [11]   [12.0] [12.1] [13]   [14.0] [14.1] [14.2] [15.0] [15.1] [15.2] [16.0] [16.1] Instructions:
+ -      -      -      -     0.47   0.20   0.33    -      -      -      -      -      -      -      -      -      -      -      -      -      -      -      -     testl	%ecx, %ecx
+ -      -      -     0.80    -      -      -     0.20    -      -      -      -      -      -      -      -      -      -      -      -      -      -      -     jle	.L8
+ -      -      -     0.44   0.20   0.33   0.03    -      -      -      -      -      -      -      -      -      -      -      -      -      -      -      -     subl	$1, %ecx
+ -      -      -      -      -      -      -      -      -      -      -      -     0.47   0.53    -     0.04   0.42   0.54   0.33   0.33   0.34    -      -     vmovss	(%rdx), %xmm0
+ -      -      -     0.16   0.32   0.16   0.36    -      -      -      -      -      -      -      -      -      -      -      -      -      -      -      -     leaq	4(%rax,%rcx,4), %rcx
+ -      -      -      -      -      -      -      -      -      -     0.50   0.50   0.53   0.47    -     0.05   0.55   0.40   0.33   0.34   0.33    -      -     vaddss	(%rax), %xmm0, %xmm0
+ -      -      -     0.03   0.13   0.30   0.54    -      -      -      -      -      -      -      -      -      -      -      -      -      -      -      -     addq	$4, %rax
+ -      -      -      -      -      -      -      -      -      -      -      -     0.50   0.50   1.00   0.91   0.03   0.06    -      -      -     0.50   0.50   vmovss	%xmm0, (%rdx)
+ -      -      -      -     0.33   0.47   0.20    -      -      -      -      -      -      -      -      -      -      -      -      -      -      -      -     cmpq	%rcx, %rax
+ -      -      -     0.03    -      -      -     0.97    -      -      -      -      -      -      -      -      -      -      -      -      -      -      -     jne	.L7
