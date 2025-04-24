@@ -23,5 +23,5 @@ do
 done
 
 # NOTE: For every variant in the task (or test) make sure to run it in here if it is relevant.
-. ../../venv/bin/activate; ls *.c.csv | xargs ../../plotter.py combined.png
+. ../../../venv/bin/activate; ls *.c.csv | xargs ../../../plotter.py combined.png
 
