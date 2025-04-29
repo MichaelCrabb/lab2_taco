@@ -22,6 +22,8 @@ model->bytes = (((((2 * (op_params->m0 * op_params->n0)) + op_params->m0) + op_p
 }
 void COMPUTE_NAME(op_params_t *op_params, op_inputs_t *inputs, op_outputs_t *outputs, op_inouts_t *inouts, hwctx_t *hwctx)
 {
+int i0_i;
+int i0_o;
 const int m0 = op_params->m0;
 const int n0 = op_params->n0;
 const int rs_c = op_params->rs_c;
@@ -31,13 +33,18 @@ float * y = inputs->y_vect;
 float * C = inouts->C_mat;
 int i0;
 int j0;
+for (i0_o = 0; i0_o < m0; i0_o += 2)
+{
+for (i0_i = 0; i0_i < 2; i0_i += 1)
+{
 for (j0 = 0; j0 < n0; j0 += 1)
 {
-for (i0 = 0; i0 < m0; i0 += 1)
-{
+i0 = (i0_o + i0_i);
 BEGIN_INSTRUMENTATION ;
 C[((i0 * rs_c) + (j0 * cs_c))] = (C[((i0 * rs_c) + (j0 * cs_c))] + (x[i0] * y[j0]));
 END_INSTRUMENTATION ;
+
+}
 
 }
 
