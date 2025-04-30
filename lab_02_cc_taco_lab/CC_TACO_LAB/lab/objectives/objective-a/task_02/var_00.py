@@ -718,7 +718,7 @@ def do_split(module: Module, to_split: str, outer: str, inner: str, factor: str)
     for node in module.body:
         if isinstance(node, FunctionDef):
             operation_func = node
-            break
+            
     assert(operation_func != None)
 
     # Add declarations to start of function
@@ -781,7 +781,7 @@ def do_split(module: Module, to_split: str, outer: str, inner: str, factor: str)
     found = False
     while not found:
         for node in traverse.body:
-            if isinstance(node, Assign) and node.targets[0].id == 'y[i0*n0+j0]':
+            if isinstance(node, Assign) and isinstance(node.targets[0], Subscript):
                 found = True
                 break
             if isinstance(node, For):
