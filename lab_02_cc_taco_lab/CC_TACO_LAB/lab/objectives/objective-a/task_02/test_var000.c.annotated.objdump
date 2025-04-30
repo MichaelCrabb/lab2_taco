@@ -1,0 +1,98 @@
+
+test_var000.c.dbg.o:     file format elf64-x86-64
+
+
+Disassembly of section .text:
+
+0000000000000000 <compute_model_tst>:
+			 op_params_t  *op_params,
+			 op_inputs_t  *inputs,
+			 op_outputs_t *outputs,
+			 op_inouts_t  *inouts,
+			 hwctx_t      *hwctx )
+{
+   0:	f3 0f 1e fa          	endbr64
+
+  model->flops =
+    op_params->m0;
+   4:	8b 06                	mov    (%rsi),%eax
+
+  model->bytes =
+   6:	c5 f8 57 c0          	vxorps %xmm0,%xmm0,%xmm0
+  model->flops =
+   a:	c5 fa 2a c8          	vcvtsi2ss %eax,%xmm0,%xmm1
+    (3*(op_params->m0)
+   e:	8d 04 40             	lea    (%rax,%rax,2),%eax
+  11:	48 98                	cltq
+  model->bytes =
+  13:	48 c1 e0 02          	shl    $0x2,%rax
+  17:	78 17                	js     30 <compute_model_tst+0x30>
+  19:	c4 e1 fa 2a c0       	vcvtsi2ss %rax,%xmm0,%xmm0
+  model->flops =
+  1e:	c5 f0 14 c8          	vunpcklps %xmm0,%xmm1,%xmm1
+  22:	c5 f8 13 0f          	vmovlps %xmm1,(%rdi)
+     )*sizeof(float);
+}
+  26:	c3                   	ret
+  27:	66 0f 1f 84 00 00 00 	nopw   0x0(%rax,%rax,1)
+  2e:	00 00 
+  model->bytes =
+  30:	48 d1 e8             	shr    $1,%rax
+  33:	c4 e1 fa 2a c0       	vcvtsi2ss %rax,%xmm0,%xmm0
+  38:	c5 fa 58 c0          	vaddss %xmm0,%xmm0,%xmm0
+  model->flops =
+  3c:	c5 f0 14 c8          	vunpcklps %xmm0,%xmm1,%xmm1
+  40:	c5 f8 13 0f          	vmovlps %xmm1,(%rdi)
+}
+  44:	c3                   	ret
+  45:	66 66 2e 0f 1f 84 00 	data16 cs nopw 0x0(%rax,%rax,1)
+  4c:	00 00 00 00 
+
+0000000000000050 <compute_tst>:
+		   op_inputs_t  *inputs,
+		   op_outputs_t *outputs,
+		   op_inouts_t  *inouts,
+		   hwctx_t   *hwctx )
+
+{
+  50:	f3 0f 1e fa          	endbr64
+  // dimensions
+  const int m0 = op_params->m0;
+  54:	48 63 17             	movslq (%rdi),%rdx
+{
+  57:	48 89 c8             	mov    %rcx,%rax
+  
+  // buffers
+  float *x = inputs->x_vect;
+  5a:	48 8b 4e 18          	mov    0x18(%rsi),%rcx
+  float *y = inputs->y_vect;
+  float *z = inouts->z_vect;
+  5e:	48 8b 78 10          	mov    0x10(%rax),%rdi
+  float *y = inputs->y_vect;
+  62:	48 8b 76 20          	mov    0x20(%rsi),%rsi
+
+  
+  BEGIN_INSTRUMENTATION;
+  for( int i0 = 0; i0 < m0; ++i0 )
+  66:	85 d2                	test   %edx,%edx
+  68:	7e 1e                	jle    88 <compute_tst+0x38>
+  6a:	48 c1 e2 02          	shl    $0x2,%rdx
+  6e:	31 c0                	xor    %eax,%eax
+    {
+	  z[i0] =
+	    x[i0] *
+  70:	c5 fa 10 04 01       	vmovss (%rcx,%rax,1),%xmm0
+  75:	c5 fa 59 04 06       	vmulss (%rsi,%rax,1),%xmm0,%xmm0
+	  z[i0] =
+  7a:	c5 fa 11 04 07       	vmovss %xmm0,(%rdi,%rax,1)
+  for( int i0 = 0; i0 < m0; ++i0 )
+  7f:	48 83 c0 04          	add    $0x4,%rax
+  83:	48 39 d0             	cmp    %rdx,%rax
+  86:	75 e8                	jne    70 <compute_tst+0x20>
+
+    }
+  END_INSTRUMENTATION;
+  
+
+}
+  88:	c3                   	ret
