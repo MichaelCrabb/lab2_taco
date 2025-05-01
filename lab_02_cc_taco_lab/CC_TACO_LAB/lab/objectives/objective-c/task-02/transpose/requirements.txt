@@ -1,5 +1,0 @@
-osaca
-matplotlib
-pandas
-coverage
-
