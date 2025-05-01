@@ -14,8 +14,8 @@
 
 
 # modify or pass as param to make
-FILE_TST?=test_var000.c
-FILE_REF?=baseline.c
+FILE_TST?=baseline3.c
+FILE_REF?=baseline3.c
 FILE_OP_C?=OP.c
 OP_INCLUDE_DIR?=./
 
@@ -115,7 +115,8 @@ measure-verifier: build-verifier
 # Feel free to use parameters other than the defaults as
 # they will give a more representative read of the performance
 measure-performance: build-timer
-	./run_timer.x |tee $(CSV_FILE_TST)
+	./run_timer.x |tee split3.csv
+#$(CSV_FILE_TST)
 
 
 #####

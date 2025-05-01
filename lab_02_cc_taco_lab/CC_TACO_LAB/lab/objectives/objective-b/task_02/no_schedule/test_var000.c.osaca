@@ -1,0 +1,47 @@
+Open Source Architecture Code Analyzer (OSACA) - 0.7.0
+Analyzed file:      test_var000.c.osaca.s
+Architecture:       SPR
+Timestamp:          2025-04-30 03:02:26
+
+-------------------------- WARNING: No micro-architecture was specified -------------------------
+         A default uarch for this particular ISA was used. Specify the uarch with --arch.
+         See --help for more information.
+-------------------------------------------------------------------------------------------------
+
+ P - Throughput of LOAD operation can be hidden behind a past or future STORE instruction
+ * - Instruction micro-ops not bound to a port
+ X - No throughput/latency information for this instruction in data file
+
+
+Combined Analysis Report
+------------------------
+                                                Port pressure in cycles                                                
+     |  0   - 0DV  |  1   - 1DV  |  2   |  3   |  4   |  5   |  6   |  7   |  8   |  9   |  10  |  11  ||  CP  | LCD  |
+-----------------------------------------------------------------------------------------------------------------------
+  50 |             |             |      |      |      |      |      |      |      |      |      |      ||      |      |   # 0 "" 2
+  51 |             |             |      |      |      |      |      |      |      |      |      |      ||      |      |   #NO_APP
+  52 | 0.20        | 0.20        |      |      |      | 0.20 | 0.20 |      |      |      | 0.20 |      ||      |      |   testl %edx, %edx
+  53 |             |             |      |      |      |      |      |      |      |      |      |      ||      |      | * jle .L6
+  54 | 0.50        |             |      |      |      |      | 0.50 |      |      |      |      |      ||      |      |   salq $2, %rdx
+  55 | 0.12        | 0.13        |      |      |      | 0.25 | 0.25 |      |      |      | 0.25 |      ||  1.0 |      |   xorl %eax, %eax
+  56 |             |             |      |      |      |      |      |      |      |      |      |      ||      |      |   .p2align 4,,10
+  57 |             |             |      |      |      |      |      |      |      |      |      |      ||      |      |   .p2align 3
+  58 |             |             |      |      |      |      |      |      |      |      |      |      ||      |      |   .L7:
+  59 |             |             | 0.33 | 0.33 |      |      |      |      |      |      |      | 0.33 ||  5.0 |      |   vmovss (%rcx,%rax), %xmm0
+  60 | 0.38        | 0.62        | 0.33 | 0.33 |      |      |      |      |      |      |      | 0.33 ||  4.0 |      |   vmulss (%rsi,%rax), %xmm0, %xmm0
+  61 |             |             |      |      | 0.50 |      |      | 0.50 | 0.50 | 0.50 |      |      ||  0.0 |      |   vmovss %xmm0, (%rdi,%rax)
+  62 | 0.00        | 0.25        |      |      |      | 0.25 | 0.25 |      |      |      | 0.25 |      ||      |      |   addq $4, %rax
+  63 | 0.00        | 0.00        |      |      |      | 0.50 | 0.00 |      |      |      | 0.50 |      ||      |      |   cmpq %rdx, %rax
+  64 |             |             |      |      |      |      |      |      |      |      |      |      ||      |      | * jne .L7
+  65 |             |             |      |      |      |      |      |      |      |      |      |      ||      |      |   .L6:
+  66 |             |             |      |      |      |      |      |      |      |      |      |      ||      |      |   #APP
+  67 |             |             |      |      |      |      |      |      |      |      |      |      ||      |      |   # 70 "test_var000.c" 1
+
+       1.20          1.20          0.67   0.67   0.50   1.20   1.20   0.50   0.50   0.50   1.20   0.67      10    0.0  
+
+
+
+
+Loop-Carried Dependencies Analysis Report
+-----------------------------------------
+

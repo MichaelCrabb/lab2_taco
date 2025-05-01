@@ -1,0 +1,53 @@
+Open Source Architecture Code Analyzer (OSACA) - 0.7.0
+Analyzed file:      baseline2.c.osaca.s
+Architecture:       SPR
+Timestamp:          2025-05-01 18:11:27
+
+-------------------------- WARNING: No micro-architecture was specified -------------------------
+         A default uarch for this particular ISA was used. Specify the uarch with --arch.
+         See --help for more information.
+-------------------------------------------------------------------------------------------------
+
+ P - Throughput of LOAD operation can be hidden behind a past or future STORE instruction
+ * - Instruction micro-ops not bound to a port
+ X - No throughput/latency information for this instruction in data file
+
+
+Combined Analysis Report
+------------------------
+                                                Port pressure in cycles                                                
+     |  0   - 0DV  |  1   - 1DV  |  2   |  3   |  4   |  5   |  6   |  7   |  8   |  9   |  10  |  11  ||  CP  | LCD  |
+-----------------------------------------------------------------------------------------------------------------------
+  49 |             |             |      |      |      |      |      |      |      |      |      |      ||      |      |   # 0 "" 2
+  50 |             |             |      |      |      |      |      |      |      |      |      |      ||      |      |   #NO_APP
+  51 | 0.20        | 0.20        |      |      |      | 0.20 | 0.20 |      |      |      | 0.20 |      ||  1.0 |      |   movl $16, %edx
+  52 | 0.20        | 0.20        |      |      |      | 0.20 | 0.20 |      |      |      | 0.20 |      ||      |      |   xorl %r8d, %r8d
+  53 | 0.20        | 0.20        |      |      |      | 0.20 | 0.20 |      |      |      | 0.20 |      ||      |      |   testl %r9d, %r9d
+  54 |             |             |      |      |      |      |      |      |      |      |      |      ||      |      | * jle .L7
+  55 |             |             |      |      |      |      |      |      |      |      |      |      ||      |      |   .p2align 4,,10
+  56 |             |             |      |      |      |      |      |      |      |      |      |      ||      |      |   .p2align 3
+  57 |             |             |      |      |      |      |      |      |      |      |      |      ||      |      |   .L6:
+  58 | 0.20        | 0.20        |      |      |      | 0.20 | 0.20 |      |      |      | 0.20 |      ||  1.0 |      |   leaq -16(%rdx), %rax
+  59 |             |             |      |      |      |      |      |      |      |      |      |      ||      |      |   .L8:
+  60 |             |             | 0.33 | 0.33 |      |      |      |      |      |      |      | 0.33 ||  5.0 |      |   vmovss (%rdi,%rax), %xmm0
+  61 | 0.50        | 0.50        | 0.33 | 0.33 |      |      |      |      |      |      |      | 0.33 ||  4.0 |      |   vmulss (%rsi,%rax), %xmm0, %xmm0
+  62 |             |             |      |      | 0.50 |      |      | 0.50 | 0.50 | 0.50 |      |      ||  0.0 |      |   vmovss %xmm0, (%rcx,%rax)
+  63 | 0.20        | 0.20        |      |      |      | 0.20 | 0.20 |      |      |      | 0.20 |      ||      |      |   addq $4, %rax
+  64 | 0.20        | 0.20        |      |      |      | 0.20 | 0.20 |      |      |      | 0.20 |      ||      |      |   cmpq %rax, %rdx
+  65 |             |             |      |      |      |      |      |      |      |      |      |      ||      |      | * jne .L8
+  66 | 0.20        | 0.20        |      |      |      | 0.20 | 0.20 |      |      |      | 0.20 |      ||      |      |   addl $4, %r8d
+  67 | 0.10        | 0.10        |      |      |      | 0.26 | 0.27 |      |      |      | 0.27 |      ||      |      |   addq $16, %rdx
+  68 | 0.00        | 0.00        |      |      |      | 0.34 | 0.33 |      |      |      | 0.33 |      ||      |      |   cmpl %r8d, %r9d
+  69 |             |             |      |      |      |      |      |      |      |      |      |      ||      |      | * jg .L6
+  70 |             |             |      |      |      |      |      |      |      |      |      |      ||      |      |   .L7:
+  71 |             |             |      |      |      |      |      |      |      |      |      |      ||      |      |   #APP
+  72 |             |             |      |      |      |      |      |      |      |      |      |      ||      |      |   # 40 "baseline2.c" 1
+
+       2.00          2.00          0.67   0.67   0.50   2.00   2.00   0.50   0.50   0.50   2.00   0.67      11    0.0  
+
+
+
+
+Loop-Carried Dependencies Analysis Report
+-----------------------------------------
+
