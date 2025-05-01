@@ -1,4 +1,2 @@
 split i0 i0_o i0_i 8
-interchange i0_o i0_i
-unroll i0_i
-unroll i0_o
+

@@ -1,0 +1,77 @@
+
+[0] Code Region - foo
+
+Iterations:        100
+Instructions:      1500
+Total Cycles:      305
+Total uOps:        1500
+
+Dispatch Width:    6
+uOps Per Cycle:    4.92
+IPC:               4.92
+Block RThroughput: 2.5
+
+
+Instruction Info:
+[1]: #uOps
+[2]: Latency
+[3]: RThroughput
+[4]: MayLoad
+[5]: MayStore
+[6]: HasSideEffects (U)
+
+[1]    [2]    [3]    [4]    [5]    [6]    Instructions:
+ 1      1     0.20                        movl	$32, %edx
+ 1      2     0.20                        xorl	%r8d, %r8d
+ 1      2     0.20                        testl	%r9d, %r9d
+ 1      1     0.50                        jle	.L7
+ 1      1     1.00                        leaq	-32(%rdx), %rax
+ 1      7     0.33    *                   vmovss	(%rdi,%rax), %xmm0
+ 2      11    0.50    *                   vmulss	(%rsi,%rax), %xmm0, %xmm0
+ 2      12    0.50           *            vmovss	%xmm0, (%rcx,%rax)
+ 0      1     0.00                        addq	$4, %rax
+ 1      1     0.20                        cmpq	%rax, %rdx
+ 1      1     0.50                        jne	.L8
+ 1      1     0.20                        addl	$8, %r8d
+ 0      1     0.00                        addq	$32, %rdx
+ 1      1     0.20                        cmpl	%r8d, %r9d
+ 1      1     0.50                        jg	.L6
+
+
+Resources:
+[0]   - ADLPPort00
+[1]   - ADLPPort01
+[2]   - ADLPPort02
+[3]   - ADLPPort03
+[4]   - ADLPPort04
+[5]   - ADLPPort05
+[6]   - ADLPPort06
+[7]   - ADLPPort07
+[8]   - ADLPPort08
+[9]   - ADLPPort09
+[10]  - ADLPPort10
+[11]  - ADLPPort11
+[12]  - ADLPPortInvalid
+
+
+Resource pressure per iteration:
+[0]    [1]    [2]    [3]    [4]    [5]    [6]    [7]    [8]    [9]    [10]   [11]   [12]   
+2.31   2.22   0.66   0.67   0.50   2.04   2.23   0.50   0.50   0.50   2.20   0.67    -     
+
+Resource pressure by instruction:
+[0]    [1]    [2]    [3]    [4]    [5]    [6]    [7]    [8]    [9]    [10]   [11]   [12]   Instructions:
+0.01   0.02    -      -      -     0.61   0.09    -      -      -     0.27    -      -     movl	$32, %edx
+0.12   0.12    -      -      -     0.14   0.58    -      -      -     0.04    -      -     xorl	%r8d, %r8d
+0.17   0.08    -      -      -     0.42    -      -      -      -     0.33    -      -     testl	%r9d, %r9d
+0.69    -      -      -      -      -     0.31    -      -      -      -      -      -     jle	.L7
+ -     1.00    -      -      -      -      -      -      -      -      -      -      -     leaq	-32(%rdx), %rax
+ -      -     0.33   0.33    -      -      -      -      -      -      -     0.34    -     vmovss	(%rdi,%rax), %xmm0
+0.18   0.82   0.33   0.34    -      -      -      -      -      -      -     0.33    -     vmulss	(%rsi,%rax), %xmm0, %xmm0
+ -      -      -      -     0.50    -      -     0.50   0.50   0.50    -      -      -     vmovss	%xmm0, (%rcx,%rax)
+ -      -      -      -      -      -      -      -      -      -      -      -      -     addq	$4, %rax
+0.09    -      -      -      -     0.18    -      -      -      -     0.73    -      -     cmpq	%rax, %rdx
+0.69    -      -      -      -      -     0.31    -      -      -      -      -      -     jne	.L8
+0.01   0.12    -      -      -     0.47   0.15    -      -      -     0.25    -      -     addl	$8, %r8d
+ -      -      -      -      -      -      -      -      -      -      -      -      -     addq	$32, %rdx
+0.01   0.06    -      -      -     0.22   0.13    -      -      -     0.58    -      -     cmpl	%r8d, %r9d
+0.34    -      -      -      -      -     0.66    -      -      -      -      -      -     jg	.L6

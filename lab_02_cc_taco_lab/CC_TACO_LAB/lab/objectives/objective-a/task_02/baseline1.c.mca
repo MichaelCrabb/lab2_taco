@@ -1,0 +1,71 @@
+
+[0] Code Region - foo
+
+Iterations:        100
+Instructions:      1200
+Total Cycles:      326
+Total uOps:        1500
+
+Dispatch Width:    6
+uOps Per Cycle:    4.60
+IPC:               3.68
+Block RThroughput: 2.5
+
+
+Instruction Info:
+[1]: #uOps
+[2]: Latency
+[3]: RThroughput
+[4]: MayLoad
+[5]: MayStore
+[6]: HasSideEffects (U)
+
+[1]    [2]    [3]    [4]    [5]    [6]    Instructions:
+ 1      2     0.20                        testl	%edi, %edi
+ 1      1     0.50                        jle	.L6
+ 1      2     0.20                        xorl	%eax, %eax
+ 1      7     0.33    *                   vmovss	(%rdx,%rax,4), %xmm0
+ 2      11    0.50    *                   vmulss	(%rcx,%rax,4), %xmm0, %xmm0
+ 2      12    0.50           *            vmovss	%xmm0, (%rsi,%rax,4)
+ 1      7     0.33    *                   vmovss	4(%rdx,%rax,4), %xmm0
+ 2      11    0.50    *                   vmulss	4(%rcx,%rax,4), %xmm0, %xmm0
+ 2      12    0.50           *            vmovss	%xmm0, 4(%rsi,%rax,4)
+ 0      1     0.00                        addq	$2, %rax
+ 1      1     0.20                        cmpl	%eax, %edi
+ 1      1     0.50                        jg	.L7
+
+
+Resources:
+[0]   - ADLPPort00
+[1]   - ADLPPort01
+[2]   - ADLPPort02
+[3]   - ADLPPort03
+[4]   - ADLPPort04
+[5]   - ADLPPort05
+[6]   - ADLPPort06
+[7]   - ADLPPort07
+[8]   - ADLPPort08
+[9]   - ADLPPort09
+[10]  - ADLPPort10
+[11]  - ADLPPort11
+[12]  - ADLPPortInvalid
+
+
+Resource pressure per iteration:
+[0]    [1]    [2]    [3]    [4]    [5]    [6]    [7]    [8]    [9]    [10]   [11]   [12]   
+1.66   1.27   1.33   1.33   1.00   1.27   1.52   1.00   1.00   1.00   1.28   1.34    -     
+
+Resource pressure by instruction:
+[0]    [1]    [2]    [3]    [4]    [5]    [6]    [7]    [8]    [9]    [10]   [11]   [12]   Instructions:
+ -     0.27    -      -      -     0.45    -      -      -      -     0.28    -      -     testl	%edi, %edi
+0.38    -      -      -      -      -     0.62    -      -      -      -      -      -     jle	.L6
+ -      -      -      -      -     0.25   0.02    -      -      -     0.73    -      -     xorl	%eax, %eax
+ -      -     0.33   0.33    -      -      -      -      -      -      -     0.34    -     vmovss	(%rdx,%rax,4), %xmm0
+0.06   0.94   0.34   0.33    -      -      -      -      -      -      -     0.33    -     vmulss	(%rcx,%rax,4), %xmm0, %xmm0
+ -      -      -      -      -      -      -      -     1.00   1.00    -      -      -     vmovss	%xmm0, (%rsi,%rax,4)
+ -      -     0.33   0.34    -      -      -      -      -      -      -     0.33    -     vmovss	4(%rdx,%rax,4), %xmm0
+0.94   0.06   0.33   0.33    -      -      -      -      -      -      -     0.34    -     vmulss	4(%rcx,%rax,4), %xmm0, %xmm0
+ -      -      -      -     1.00    -      -     1.00    -      -      -      -      -     vmovss	%xmm0, 4(%rsi,%rax,4)
+ -      -      -      -      -      -      -      -      -      -      -      -      -     addq	$2, %rax
+ -      -      -      -      -     0.57   0.16    -      -      -     0.27    -      -     cmpl	%eax, %edi
+0.28    -      -      -      -      -     0.72    -      -      -      -      -      -     jg	.L7

@@ -26,12 +26,15 @@ const int m0 = op_params->m0;
 float * x = inputs->x_vect;
 float * y = inputs->y_vect;
 float * z = inouts->z_vect;
-int i0;
+int i0_o;
+int i0_i;
 int j0;
 BEGIN_INSTRUMENTATION ;
-for (i0 = 0; i0 < m0; i0 += 1)
+for (i0_o = 0; i0_o < m0; i0_o += 2)
 {
-z[i0] = (x[i0] * y[i0]);
+    for (i0_i = 0; i0_i < 2; i0_i += 1){
+    z[i0_o + i0_i] = (x[i0_o + i0_i] * y[i0_o + i0_i]);
+    }
 
 }
 END_INSTRUMENTATION ;
